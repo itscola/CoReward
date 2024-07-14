@@ -1,0 +1,12 @@
+name: CoReward
+version: 1.0
+author: [white_cola]
+main: top.witcola.coreward.CoReward
+softdepend:
+  - PlaceholderAPI
+commands:
+  onlinereward:
+    usage: /onlinereward [ChildCmd]
+permissions:
+  cr.admin:
+    default: op

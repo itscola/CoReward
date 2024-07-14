@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+group = 'top.whitecola'
+version = '1.0-SNAPSHOT'
+java.sourceCompatibility = JavaVersion.VERSION_1_8
+
+repositories {
+    mavenCentral()
+    maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    compileOnly 'org.spigotmc:spigot-api:1.16.5-R0.1-SNAPSHOT'
+}
+
+test {
+    useJUnitPlatform()
+}
