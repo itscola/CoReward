@@ -19,20 +19,21 @@ public class PlayerTimeTrackListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        dailyOnlineTimeConfig.getConfig().setPlayerLastLogin(event.getPlayer().getName());
+        dailyOnlineTimeConfig.getConfig().setPlayerLastLogin(event.getPlayer().getUniqueId());
         dailyOnlineTimeConfig.saveConfig();
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         String playerName = event.getPlayer().getName();
-        long totalMSeconds = CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyOnlineSeconds(playerName);
+        java.util.UUID playerUUID = event.getPlayer().getUniqueId();
+        long totalMSeconds = CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyOnlineSeconds(playerUUID);
         long minutes = totalMSeconds  / 60 ;
         long seconds = totalMSeconds % 60;
         Bukkit.broadcastMessage("[CoReward] 玩家"+playerName+" 本次在线 "+minutes+" 分, "+seconds+" 秒。");
-        dailyOnlineTimeConfig.getConfig().caculateOnlineTime(event.getPlayer().getName());
-        dailyOnlineTimeConfig.getConfig().summarySeconds(event.getPlayer().getName());
-        dailyOnlineTimeConfig.getConfig().removePlayerLastLogin(event.getPlayer().getName());
+        dailyOnlineTimeConfig.getConfig().caculateOnlineTime(playerUUID);
+        dailyOnlineTimeConfig.getConfig().summarySeconds(playerUUID);
+        dailyOnlineTimeConfig.getConfig().removePlayerLastLogin(playerUUID);
         dailyOnlineTimeConfig.saveConfig();
     }
 

@@ -25,16 +25,17 @@ public class QueryDailyOnlineTime implements ICommand {
 
 //        CoReward.getCoReward().dailyOnlineTimeRecords.reloadConfig();
         String playerName = strings[1];
+        UUID playerUUID = DailyOnlineTimeRecord.getPlayerUUID(playerName);
 
-        long totalMSeconds = CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerOnlineSeconds(playerName);
+        long totalMSeconds = CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerOnlineSeconds(playerUUID);
         long minutes = totalMSeconds  / 60 ;
         long seconds = totalMSeconds % 60;
 
 
-        long dtotalMSeconds = CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyOnlineSeconds(playerName);
+        long dtotalMSeconds = CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyOnlineSeconds(playerUUID);
         long dminutes = dtotalMSeconds  / 60 ;
         long dseconds = dtotalMSeconds % 60;
-        commandSender.sendMessage("玩家 " + playerName + playerName + " 的本次在线时间为: " + minutes + " 分钟 " + seconds + " 秒"+"。累计在线时间为: " + dminutes + " 分钟 " + dseconds + " 秒。");
+        commandSender.sendMessage("玩家 " + playerName + " 的本次在线时间为: " + minutes + " 分钟 " + seconds + " 秒"+"。累计在线时间为: " + dminutes + " 分钟 " + dseconds + " 秒。");
 
 
         return true;

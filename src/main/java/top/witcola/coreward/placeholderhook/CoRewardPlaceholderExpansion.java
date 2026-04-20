@@ -28,17 +28,16 @@ public class CoRewardPlaceholderExpansion extends PlaceholderExpansion {
             return "";
         }
 
-
         if (identifier.equals("daily_online_time_m")) {
-            return String.valueOf(CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyOnlineSeconds(player.getName())/60);
+            return String.valueOf(CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyOnlineSeconds(player.getUniqueId())/60);
         }
 
         if (identifier.equals("daily_online_time_s")) {
-            return String.valueOf(CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyOnlineSeconds(player.getName()));
+            return String.valueOf(CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyOnlineSeconds(player.getUniqueId()));
         }
 
         if (identifier.equals("daily_online_time_mos")) {
-            return String.valueOf(CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyOnlineSeconds(player.getName())%60);
+            return String.valueOf(CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyOnlineSeconds(player.getUniqueId())%60);
         }
 
         if (identifier.startsWith("is_record_claimed_")) {
@@ -48,7 +47,7 @@ public class CoRewardPlaceholderExpansion extends PlaceholderExpansion {
                 return "";
             }
 
-            if(CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().hasClaim(player.getName(),record)){
+            if(CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().hasClaim(player.getUniqueId(), record)){
                 return "已领取";
             } else {
                 return "未领取";
@@ -66,7 +65,7 @@ public class CoRewardPlaceholderExpansion extends PlaceholderExpansion {
                 return "奖励项 "+record+" 不存在";
             }
 
-            long mins = CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyOnlineSeconds(player.getName())/60;
+            long mins = CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyOnlineSeconds(player.getUniqueId())/60;
             if (mins>=rewardItem.minutes) {
                 return "已达到时间";
             } else {

@@ -7,9 +7,11 @@ import org.bukkit.entity.Player;
 import top.witcola.coreward.CoReward;
 import top.witcola.coreward.command.ICommand;
 import top.witcola.coreward.command.ItsACommand;
+import top.witcola.coreward.config.onlinereward.DailyOnlineTimeRecord;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -22,12 +24,14 @@ public class ResetClaimRecord implements ICommand{
             return false;
         }
         String playerName = strings[1];
+        UUID playerUUID = DailyOnlineTimeRecord.getPlayerUUID(playerName);
+        String uuidStr = playerUUID.toString();
 
         ConcurrentHashMap<String, List<String>> playerDailyRewardClaim = CoReward.getCoReward().dailyOnlineTimeRecords.getConfig().getPlayerDailyRewardClaim();
 
-        if (playerDailyRewardClaim.containsKey(playerName)) {
-            playerDailyRewardClaim.remove(playerName);
-            commandSender.sendMessage("Successfully reset the claim record for player: " + playerName);
+        if (playerDailyRewardClaim.containsKey(uuidStr)) {
+            playerDailyRewardClaim.remove(uuidStr);
+            commandSender.sendMessage("Successfully reset the claim record for player: " + playerName + " (UUID: " + uuidStr + ")");
         } else {
             commandSender.sendMessage("No claim record found for player: " + playerName);
         }
@@ -45,7 +49,7 @@ public class ResetClaimRecord implements ICommand{
     @Override
     public List<String> handleArg(CommandSender sender, String handleArg) {
         if (handleArg.equals("<player>")) {
-            return Bukkit.getOnlinePlayers().stream().map(i->i.getName()).collect(Collectors.toList());
+            return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
         }
         return Arrays.asList("");
     }

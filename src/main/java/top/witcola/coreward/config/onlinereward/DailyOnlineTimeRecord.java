@@ -14,27 +14,28 @@ import top.witcola.coreward.utils.LocalDateUtils;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DailyOnlineTimeRecord {
     private String date;
+    // 存储结构不变，key 改为 UUID 字符串
     private ConcurrentHashMap<String, String> playerLastLogin = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Long> playerOnlineSeconds = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, Long> playerDailyOnlineSeconds = new ConcurrentHashMap<>();
     private ConcurrentHashMap<String, List<String>> playerDailyRewardClaim = new ConcurrentHashMap<>();
 
-
     public DailyOnlineTimeRecord() {
 
     }
 
-    public boolean hasClaim(String playerName, String rewardName) {
+    public boolean hasClaim(UUID playerUUID, String rewardName) {
         RewardItem rewardItem = CoReward.getCoReward().onlineRewardItemRecords.getConfig().getItemByName(rewardName);
         if (rewardItem == null) {
             return false;
         }
 
-        List<String> claimedRewards = playerDailyRewardClaim.get(playerName);
+        List<String> claimedRewards = playerDailyRewardClaim.get(playerUUID.toString());
         if (claimedRewards != null) {
             return claimedRewards.contains(rewardName);
         }
@@ -43,7 +44,8 @@ public class DailyOnlineTimeRecord {
     }
 
     public boolean claimReward(Player p, String rewardName){
-        long dOnlineMins = getPlayerDailyOnlineSeconds(p.getName())/60;
+        String playerUUID = p.getUniqueId().toString();
+        long dOnlineMins = getPlayerDailyOnlineSeconds(p.getUniqueId())/60;
         RewardItem rewardItem = CoReward.getCoReward().onlineRewardItemRecords.getConfig().getItemByName(rewardName);
         if (rewardItem == null) {
             p.sendMessage("奖励项 "+rewardName+" 不存在。");
@@ -51,7 +53,7 @@ public class DailyOnlineTimeRecord {
         }
 
 
-        if (hasClaim(p.getName(), rewardName)) {
+        if (hasClaim(p.getUniqueId(), rewardName)) {
             p.sendMessage("奖励项 "+rewardName+" 今天已经被领取过了。");
             p.playSound(p.getLocation(), Sound.ENTITY_ENDERMAN_TELEPORT, 2, 2);
             return false;
@@ -59,7 +61,7 @@ public class DailyOnlineTimeRecord {
 
         if (dOnlineMins>=rewardItem.minutes){
             // 可领取
-            addClaimValue(p.getName(),rewardName);
+            addClaimValue(playerUUID, rewardName);
             List<String> commands = rewardItem.ExcutingCommands;
             Plugin placeholderAPI = Bukkit.getPluginManager().getPlugin("PlaceholderAPI");
             if (commands!=null&&!commands.isEmpty()) {
@@ -90,8 +92,8 @@ public class DailyOnlineTimeRecord {
         }
     }
 
-    public void addClaimValue( String key, String value) {
-        playerDailyRewardClaim.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
+    public void addClaimValue(String playerUUID, String value) {
+        playerDailyRewardClaim.computeIfAbsent(playerUUID, k -> new ArrayList<>()).add(value);
     }
 
     public ConcurrentHashMap<String, Long> getPlayerDailyOnlineSeconds() {
@@ -110,27 +112,29 @@ public class DailyOnlineTimeRecord {
         return playerLastLogin;
     }
 
-    public long getPlayerDailyOnlineSeconds(String playerName) {
+    public long getPlayerDailyOnlineSeconds(UUID playerUUID) {
         checkIfSameDayOrReset();
-        caculateOnlineTime(playerName);
-        return playerDailyOnlineSeconds.getOrDefault(playerName,0l)+playerOnlineSeconds.getOrDefault(playerName,0l);
+        caculateOnlineTime(playerUUID);
+        String uuidStr = playerUUID.toString();
+        return playerDailyOnlineSeconds.getOrDefault(uuidStr, 0L) + playerOnlineSeconds.getOrDefault(uuidStr, 0L);
     }
 
     //onexit
-    public void summarySeconds(String playerName){
-        if (playerDailyOnlineSeconds.containsKey(playerName)){
-            playerDailyOnlineSeconds.put(playerName, playerDailyOnlineSeconds.get(playerName)+playerOnlineSeconds.get(playerName));
+    public void summarySeconds(UUID playerUUID){
+        String uuidStr = playerUUID.toString();
+        if (playerDailyOnlineSeconds.containsKey(uuidStr)){
+            playerDailyOnlineSeconds.put(uuidStr, playerDailyOnlineSeconds.get(uuidStr) + playerOnlineSeconds.get(uuidStr));
         } else {
-            playerDailyOnlineSeconds.put(playerName, playerOnlineSeconds.get(playerName));
+            playerDailyOnlineSeconds.put(uuidStr, playerOnlineSeconds.get(uuidStr));
         }
 
         playerOnlineSeconds.clear();
     }
 
-    public Long getPlayerOnlineSeconds(String playerName) {
+    public Long getPlayerOnlineSeconds(UUID playerUUID) {
         checkIfSameDayOrReset();
-        caculateOnlineTime(playerName);
-        return playerOnlineSeconds.get(playerName);
+        caculateOnlineTime(playerUUID);
+        return playerOnlineSeconds.get(playerUUID.toString());
     }
 
     public void checkIfSameDayOrReset() {
@@ -151,24 +155,25 @@ public class DailyOnlineTimeRecord {
 
     }
 
-    public LocalDateTime getPlayerLastLogin(String playerName) {
-        return LocalDateUtils.parseToLocalDateTime(playerLastLogin.get(playerName));
+    public LocalDateTime getPlayerLastLogin(UUID playerUUID) {
+        return LocalDateUtils.parseToLocalDateTime(playerLastLogin.get(playerUUID.toString()));
     }
 
-    public void setPlayerLastLogin(String playerName) {
-        playerLastLogin.put(playerName, now());
+    public void setPlayerLastLogin(UUID playerUUID) {
+        playerLastLogin.put(playerUUID.toString(), now());
     }
 
-    public void removePlayerLastLogin(String playerName) {
-        playerLastLogin.remove(playerName);
+    public void removePlayerLastLogin(UUID playerUUID) {
+        playerLastLogin.remove(playerUUID.toString());
     }
 
-    public void caculateOnlineTime(String playerName) {
-        if (!playerLastLogin.containsKey(playerName)) {
-            playerLastLogin.put(playerName, now());
+    public void caculateOnlineTime(UUID playerUUID) {
+        String uuidStr = playerUUID.toString();
+        if (!playerLastLogin.containsKey(uuidStr)) {
+            playerLastLogin.put(uuidStr, now());
         }
-        long tims = LocalDateUtils.secondsBetween(getPlayerLastLogin(playerName),LocalDateTime.now());
-        playerOnlineSeconds.put(playerName, tims);
+        long tims = LocalDateUtils.secondsBetween(getPlayerLastLogin(playerUUID),LocalDateTime.now());
+        playerOnlineSeconds.put(uuidStr, tims);
 
     }
 
@@ -176,6 +181,10 @@ public class DailyOnlineTimeRecord {
         return LocalDateUtils.formatLocalDateTime(LocalDateTime.now());
     }
 
+    // 根据名称查找离线玩家的UUID
+    public static UUID getPlayerUUID(String playerName) {
+        org.bukkit.OfflinePlayer offline = Bukkit.getOfflinePlayer(playerName);
+        return offline.getUniqueId();
+    }
 
 }
-
